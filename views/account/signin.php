@@ -20,7 +20,7 @@ $form = \yii\bootstrap\ActiveForm::begin();
     );
 
     echo Html::tag('div', 
-    'Забыл пароль?' . Html::a(' Восстановить пароль', ['/account/recover']),
+    'Забыл пароль?' . Html::a(' Восстановить пароль', ['/account/request-password-reset']),
     ['class' => 'title', 'style' => 'margin-bottom: 10px; margin-top: 10px;']
 );
 ActiveForm::end();

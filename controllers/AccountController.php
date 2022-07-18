@@ -4,14 +4,23 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use yii\data\ActiveDataProvider;
+use DateTime;
+
+/* Используемые модели */
 use app\models\SignupForm;
 use app\models\SigninForm;
 use app\models\User;
 use app\models\SocietyList;
+use app\models\SocietyAnswerList;
+use app\models\UserInfo;
 use app\models\SocietyItem;
 use app\models\AnswerForm;
-use DateTime;
-use yii\data\ActiveDataProvider;
+use app\models\ResetPasswordForm;
+use app\models\PasswordResetRequestForm;
+
+
+/* Контроллер аккаунта пользователя */
 
 class AccountController extends Controller
 {
@@ -34,7 +43,12 @@ class AccountController extends Controller
             return $this->redirect(array('signin'));
         }
 
-        return $this->render('index');
+        $model = UserInfo::findByEmail(\Yii::$app->user->identity->email);
+        if ($model->load(\Yii::$app->request->post()) && $model->validate() && $model->updateUserInfo()) {
+            return $this->render('index', ['model' => $model]);
+        }
+
+        return $this->render('index', ['model' => $model]);
     }
 
     /* Обработка маршрута регистрации нового пользователя */
@@ -71,7 +85,7 @@ class AccountController extends Controller
             /* Добавление информации о пользователе */
             Yii::$app->db->createCommand()->insert('iddi_user_info', [
                 'user_id' => $user->getId(),
-                'fullname' => $model->surname . $model->name . $model->patronymic,
+                'fullname' => $model->surname . ' ' . $model->name . ' ' . $model->patronymic,
                 'organization' => $model->organization,
                 'email' => $model->email,
                 'phone' => $model->phone,
@@ -93,7 +107,7 @@ class AccountController extends Controller
                 ->setSubject('Уведомление ' . Yii::$app->params['name_app'])
                 ->setHtmlBody($content);
 
-                
+
             /* Отправка уведомления о завершении регистрации на сайте */
             $sendM->send();
 
@@ -118,6 +132,55 @@ class AccountController extends Controller
 
 
         return $this->render('signin', compact('model'));
+    }
+
+    /* Обработка маршрута восстановления пароля */
+    /**
+     * Requests password reset.
+     *
+     * @return mixed
+     */
+    public function actionRequestPasswordReset()
+    {
+        $model = new PasswordResetRequestForm();
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            if ($model->sendEmail()) {
+                Yii::$app->session->setFlash('success', 'Проверьте свою электронную почту для получения дальнейших инструкций.');
+                return $this->render('requestPasswordResetSuccess');
+            } else {
+                Yii::$app->session->setFlash('error', 'К сожалению, мы не можем сбросить пароль для предоставленной электронной почты.');
+            }
+        }
+
+        return $this->render('requestPasswordResetToken', [
+            'model' => $model,
+        ]);
+    }
+
+    /**
+     * Resets password.
+     *
+     * @param string $token
+     * @return mixed
+     * @throws BadRequestHttpException
+     */
+    public function actionResetPassword($token)
+    {
+        try {
+            $model = new ResetPasswordForm($token);
+        } catch (InvalidParamException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
+            //Yii::$app->session->setFlash('success', 'Новый пароль был сохранен.');
+            return $this->redirect(array('index'));
+        }
+
+        return $this->render('resetPassword', [
+            'model' => $model,
+        ]);
     }
 
     /* Обработка маршрута выхода из аккаунта */
@@ -211,14 +274,47 @@ class AccountController extends Controller
             $resultModel = new AnswerForm();
             $resultModel->id_society = $model->id;
             $resultModel->to_email = $model->email;
-            
+
             if ($resultModel->load(\Yii::$app->request->post()) && $resultModel->validate() && $resultModel->send()) {
-                $this->redirect('admin');
+                return $this->redirect('admin');
             }
 
             return $this->render('answer', ['model' => $resultModel]);
         }
 
         return $this->render('index');
+    }
+
+    /* Обработка маршрута просмотра ответов на обращение пользователей */
+    public function actionAnswerList()
+    {
+        $query = SocietyAnswerList::find()
+            ->where(['to_email' => \Yii::$app->user->identity->email]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => 20,
+            ],
+        ]);
+
+        return $this->render('answerList', ['dataProvider' => $dataProvider]);
+    }
+
+    /* Обработка маршрута просмотра ответа на обращение пользователя */
+    public function actionAnswerListView($id)
+    {
+        $model = SocietyAnswerList::findOne($id);
+        return $this->render('answerListView', ['model' => $model]);
+    }
+
+    /* Обработка маршрута удаления пользовательского обращения */
+    public function actionAnswerListDelete($id)
+    {
+        $model = SocietyAnswerList::findOne($id);
+        if ($model) {
+            $model->delete();
+        }
+        return $this->redirect('answer-list');
     }
 }

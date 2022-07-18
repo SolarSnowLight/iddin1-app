@@ -18,6 +18,10 @@ class SocietyController extends Controller
             'success' => [
                 'class' => 'app\components\SocietyFormSuccessAction',
                 'title' => 'Написать письмо'
+            ],
+            'captcha' => [
+                'class' => 'yii\captcha\CaptchaAction',
+                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
             ]
         ];
     }

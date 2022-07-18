@@ -6,6 +6,7 @@
 use app\models\SocietyForm;
 use yii\bootstrap\ActiveForm;
 use yii\helpers\Html;
+use yii\captcha\Captcha;
 
 /* Код на JavaScript */
 $js = <<<JS
@@ -149,6 +150,7 @@ $form = \yii\bootstrap\ActiveForm::begin(['options' => ['enctype' => 'multipart/
     «Большое спасибо!
     Отправленное дд.мм.гггг Вами письмо в электронной форме за номером ID=ХХХХХХ будет доставлено и с момента поступления в Администрацию Президента Российской Федерации зарегистрировано в течение трех дней.».
     ');
-    
+
+    echo $form->field($model, 'verifyCode')->widget(\yii\captcha\Captcha::classname(), ['captchaAction' => 'society/captcha']);
     echo Html::submitButton('Направить письмо', ['class' => 'btn btn-success']);
 ActiveForm::end();

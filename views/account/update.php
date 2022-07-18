@@ -8,22 +8,32 @@ use yii\bootstrap\ActiveForm;
 use yii\grid\GridView;
 
 echo Nav::widget([
-    'options' => ['class' => 'navbar-inverse navbar-right'],
+    'options' => ['class' => 'navbar-inverse navbar-right nav-pills'],
     'items' => [
         [
-            'label' => \Yii::t('account', 'Logout') . ' (' . \Yii::$app->user->identity->username . ')',
-            'url' => ['account/logout'],
+            'label' => \Yii::t('account', 'Личный кабинет'),
+            'url' => ['account/index'],
             'linkOptions' => ['data-method' => 'post']
         ],
         [
             'label' => \Yii::t('account', 'Список заявок'),
             'url' => ['account/list'],
             'linkOptions' => ['data-method' => 'post']
-        ]
+        ],
+        [
+            'label' => \Yii::t('account', 'Ответы на обрещения'),
+            'url' => ['account/answer-list'],
+            'linkOptions' => ['data-method' => 'post']
+        ],
+        [
+            'label' => \Yii::t('account', 'Выход') . ' (' . \Yii::$app->user->identity->username . ')',
+            'url' => ['account/logout'],
+            'linkOptions' => ['data-method' => 'post']
+        ],
     ],
 ]);
 
-echo Html::tag('h1', 'Редактирование заявки', ['class' => 'title-main']);
+echo Html::tag('h1', 'Редактирование заявки', ['class' => 'title-main', 'style' => 'margin-top: 60px;']);
 
 $form = ActiveForm::begin([
     'id' => 'update-form',

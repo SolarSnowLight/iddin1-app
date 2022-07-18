@@ -21,11 +21,11 @@ function checkAccess()
 $check = checkAccess();
 
 echo Nav::widget([
-    'options' => ['class' => 'navbar-inverse navbar-right'],
+    'options' => ['class' => 'navbar-inverse navbar-right nav-pills'],
     'items' => [
         [
-            'label' => \Yii::t('account', 'Logout') . ' (' . \Yii::$app->user->identity->username . ')',
-            'url' => ['account/logout'],
+            'label' => \Yii::t('account', 'Личный кабинет'),
+            'url' => ['account/index'],
             'linkOptions' => ['data-method' => 'post']
         ],
         (!$check) ? [
@@ -37,11 +37,21 @@ echo Nav::widget([
             'label' => \Yii::t('account', 'Список обращений'),
             'url' => ['account/admin'],
             'linkOptions' => ['data-method' => 'post']
-        ] : ''
+        ] : '',
+        (!$check) ? [
+            'label' => \Yii::t('account', 'Ответы на обрещения'),
+            'url' => ['account/answer-list'],
+            'linkOptions' => ['data-method' => 'post']
+        ] : '',
+        [
+            'label' => \Yii::t('account', 'Выход') . ' (' . \Yii::$app->user->identity->username . ')',
+            'url' => ['account/logout'],
+            'linkOptions' => ['data-method' => 'post']
+        ],
     ],
 ]);
 
-echo Html::tag('h1', 'Просмотр обращения', ['class' => 'title-main']);
+echo Html::tag('h1', 'Просмотр обращения', ['class' => 'title-main', 'style' => 'margin-top: 60px;']);
 
 $form = ActiveForm::begin([
     'id' => 'update-form',
@@ -52,6 +62,9 @@ $form = ActiveForm::begin([
 $form = \yii\bootstrap\ActiveForm::begin();
 echo Html::errorSummary($model, ['class' => 'alert alert-danger', 'header' => false, 'style' => 'margin-left: 10px;']);
 echo Html::activeTextInput($model, 'check', ['class' => 'no-display', 'style' => 'margin-left: 10px;']);
+echo $form->field($model, 'id')
+    ->textInput(['readonly' => true, 'class' => 'input-group input-group-lg society-form-input', 'style' => 'margin-left: 10px; width: 95%;'])
+    ->label('Номер обращения', ['style' => "margin-left: 10px;"]);
 echo $form->field($model, 'name')
     ->textInput(['readonly' => true, 'class' => 'input-group input-group-lg society-form-input', 'style' => 'margin-left: 10px; width: 95%;'])
     ->label('ФИО', ['style' => "margin-left: 10px;"]);

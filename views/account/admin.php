@@ -18,11 +18,11 @@ function checkAccess(){
 $check = checkAccess();
 
 echo Nav::widget([
-    'options' => ['class' => 'navbar-inverse navbar-right'],
+    'options' => ['class' => 'navbar-inverse navbar-right nav-pills'],
     'items' => [
         [
-            'label' => \Yii::t('account', 'Logout') . ' (' . \Yii::$app->user->identity->username . ')',
-            'url' => ['account/logout'],
+            'label' => \Yii::t('account', 'Личный кабинет'),
+            'url' => ['account/index'],
             'linkOptions' => ['data-method' => 'post']
         ],
         (!$check) ? [
@@ -34,11 +34,16 @@ echo Nav::widget([
             'label' => \Yii::t('account', 'Список обращений'),
             'url' => ['account/admin'],
             'linkOptions' => ['data-method' => 'post']
-        ] : ''
+        ] : '',
+        [
+            'label' => \Yii::t('account', 'Выход') . ' (' . \Yii::$app->user->identity->username . ')',
+            'url' => ['account/logout'],
+            'linkOptions' => ['data-method' => 'post']
+        ],
     ],
 ]);
 
-echo Html::tag('h1', 'Список заявок', ['class' => 'title-main']);
+echo Html::tag('h1', 'Список заявок', ['class' => 'title-main', 'style' => 'margin-top: 60px;']);
 echo Html::tag('br');
 echo Html::tag('br');
 

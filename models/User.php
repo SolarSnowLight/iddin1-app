@@ -1,4 +1,5 @@
 <?php
+
 namespace app\models;
 
 use Yii;
@@ -16,6 +17,7 @@ use yii\web\IdentityInterface;
  * @property string $username
  * @property string $email
  * @property string $password_hash
+ * @property string $password_reset_token
  * @property string $auth_key
  * @property string $secure_key
  * @property integer $status Status
@@ -59,17 +61,12 @@ class User extends ActiveRecord implements IdentityInterface
     public static function findIdentities($ids, $scope = null)
     {
         $query = static::find()->where(['id' => $ids]);
-        if ($scope !== null)
-        {
-            if (is_array($scope))
-            {
-                foreach ($scope as $value)
-                {
+        if ($scope !== null) {
+            if (is_array($scope)) {
+                foreach ($scope as $value) {
                     $query->$value();
                 }
-            }
-            else
-            {
+            } else {
                 $query->$scope();
             }
         }
@@ -86,17 +83,12 @@ class User extends ActiveRecord implements IdentityInterface
     public static function findByUsername($username, $scope = null)
     {
         $query = static::find()->where(['username' => $username]);
-        if ($scope !== null)
-        {
-            if (is_array($scope))
-            {
-                foreach ($scope as $value)
-                {
+        if ($scope !== null) {
+            if (is_array($scope)) {
+                foreach ($scope as $value) {
                     $query->$value();
                 }
-            }
-            else
-            {
+            } else {
                 $query->$scope();
             }
         }
@@ -113,17 +105,12 @@ class User extends ActiveRecord implements IdentityInterface
     public static function findByEmail($email, $scope = null)
     {
         $query = static::find()->where(['email' => $email]);
-        if ($scope !== null)
-        {
-            if (is_array($scope))
-            {
-                foreach ($scope as $value)
-                {
+        if ($scope !== null) {
+            if (is_array($scope)) {
+                foreach ($scope as $value) {
                     $query->$value();
                 }
-            }
-            else
-            {
+            } else {
                 $query->$scope();
             }
         }
@@ -137,6 +124,10 @@ class User extends ActiveRecord implements IdentityInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    public function getPasswordResetToken(){
+        return $this->password_reset_roken;
     }
 
     /**
@@ -248,15 +239,18 @@ class User extends ActiveRecord implements IdentityInterface
         $this->status = self::STATUS_ACTIVE;
     }
 
-    public function setDateReg(){
+    public function setDateReg()
+    {
         $this->reg_date = date("Y-m-d H:i:s");
     }
 
-    public function setEmail($email){
+    public function setEmail($email)
+    {
         $this->email = $email;
     }
 
-    public function saveData(){
+    public function saveData()
+    {
         $this->save(false);
     }
 
@@ -271,5 +265,45 @@ class User extends ActiveRecord implements IdentityInterface
         $this->setPassword($password);
 
         return $this->save(false);
+    }
+
+    /* Методы для восстановления пароля */
+
+    /* Поиск токена обновления пароля */
+    public static function findByPasswordResetToken($token)
+    {
+
+        if (!static::isPasswordResetTokenValid($token)) {
+            return null;
+        }
+
+        return static::findOne([
+            'password_reset_token' => $token,
+            'status' => self::STATUS_ACTIVE,
+        ]);
+    }
+
+    /* Проверка валидности токена обновления пароля */
+    public static function isPasswordResetTokenValid($token)
+    {
+        if ((!$token) || empty($token)) {
+            return false;
+        }
+
+        $timestamp = (int) substr($token, strrpos($token, '_') + 1);
+        $expire = Yii::$app->params['user.passwordResetTokenExpire'];
+        return $timestamp + $expire >= time();
+    }
+
+    /* Генерация токена обновления пароля */
+    public function generatePasswordResetToken()
+    {
+        $this->password_reset_token = Yii::$app->security->generateRandomString() . '_' . time();
+    }
+
+    /* Удаление токена обновления пароля */
+    public function removePasswordResetToken()
+    {
+        $this->password_reset_token = null;
     }
 }

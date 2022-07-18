@@ -14,8 +14,9 @@ class SignupForm extends Model {
     public $patronymic;
     public $organization;
     public $phone;
-    public $password;
     public $email;
+    public $password;
+    public $retry_password;
     
     public $is_patronymic_none;
     public $check;
@@ -24,13 +25,16 @@ class SignupForm extends Model {
     /* Правила валидации */
     public function rules(){
         return [
-            [['username', 'email', 'password', 'name', 'surname'], 'required', 'message' => 'Заполните поле'],
-            [['organization', 'phone', 'password', 'patronymic'], 'string'],
+            [['username', 'email', 'password', 'name', 'surname', 'retry_password'], 'required', 'message' => 'Заполните поле'],
+            [['organization', 'phone', 'password', 'retry_password', 'patronymic'], 'string'],
+            ['email', 'trim'],
             ['email', 'email'],
             ['email', 'validateEmail'],
+            ['username', 'trim'],
             ['username', 'validateUsername'],
             ['is_patronymic_none', 'boolean'],
             ['is_patronymic_none', 'validatePatronymic'],
+            ['retry_password', 'validateRetryPassword'],
             ['check', 'app\components\BotValidator']
         ];
     }
@@ -70,6 +74,15 @@ class SignupForm extends Model {
             }
         }
     }
+
+    public function validateRetryPassword($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+            if ($this->retry_password != $this->password) {
+                $this->addError($attribute, \Yii::t('society', 'Пароли должны совпадать'));
+            }
+        }
+    }
     /***/
 
     /* Контент для label элементов */
@@ -82,7 +95,6 @@ class SignupForm extends Model {
             'organization' => 'Наименование организации (юридического лица)',
             'phone' => 'Телефон',
             'email' => 'Email-адрес *',
-            'retry_email' => 'Повтор email-адреса *',
             'theme' => 'Тема обращения',
             'body' => 'Напишите текст обращения',
             'files' => 'Прикрепить файл(ы)',

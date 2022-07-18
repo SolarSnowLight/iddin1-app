@@ -35,6 +35,8 @@ class SocietyForm extends Model
 
     public $content;
 
+    public $verifyCode;
+
     public function rules()
     {
         return [
@@ -53,9 +55,11 @@ class SocietyForm extends Model
             ], 'maxFiles' => 10],
             ['create_cabinet', 'boolean'],
             ['is_patronymic_none', 'boolean'],
+            ['phone', 'match', 'pattern' => '/^\+7[0-9]{3}[0-9]{3}[0-9]{2}[0-9]{2}$/', 'message' => 'Номер телефона должен быть формата +7987XXXXXXX' ],
             ['retry_email', 'validateRetryEmail'],
             ['is_patronymic_none', 'validatePatronymic'],
             ['create_cabinet', 'validateCreateCabinet'],
+            ['verifyCode', 'captcha', 'captchaAction' => 'society/captcha'],
             ['check', 'app\components\BotValidator']
         ];
     }
@@ -130,6 +134,7 @@ class SocietyForm extends Model
     {
         if ($this->validate()) {
             $this->content = '';
+            $current_date = (new DateTime())->format('Y-m-d H:i:s');
 
             /* Создание личного кабинета */
             if ($this->create_cabinet) {
@@ -153,7 +158,7 @@ class SocietyForm extends Model
                 Yii::$app->db->createCommand()->insert('iddi_auth_assignment', [
                     'item_name' =>  'user',
                     'user_id' => $user->getId(),
-                    'created_at' => date("Y-m-d H:i:s")
+                    'created_at' => $current_date
                 ])->execute();
 
                 $this->content = '<p>Был создан личный кабинет на сайте iddin1.ru</p>';
@@ -173,10 +178,13 @@ class SocietyForm extends Model
                 ->setSubject('На сайте ' . Yii::$app->name . ' было создано обращение');*/
 
             $this->content = $this->content . '<p>На сайте ' . Yii::$app->params['name_app'] . ' было создано обращение. Номер обращения: ' . $this->id . '</p>';
+            $this->content = $this->content . '<p>Дата обращения: ' . $current_date . '</p>';
+
             $text_to_email = '<p>На сайте ' . Yii::$app->params['name_app'] . ' было создано обращение. Номер обращения: ' . $this->id . '</p>';
             $text_to_email = $text_to_email . '<p>' . $this->body . '</p>';
             $parce = explode('@', $this->email);
             $text_to_email = $text_to_email . '<p>' . $parce[0] . '@' . $parce[1] . '</p>';
+            $text_to_email = $text_to_email . '<p>Дата обращения: ' . $current_date . '</p>';
 
             $sendM = Yii::$app->mailer->compose()
                 ->setFrom(Yii::$app->params['smtp_email'])
@@ -220,8 +228,8 @@ class SocietyForm extends Model
                 'theme' => '',
                 'body' => $this->body,
                 'files' => $filePaths,
-                'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
-                'updated_at' => (new DateTime())->format('Y-m-d H:i:s')
+                'created_at' => $current_date,
+                'updated_at' => $current_date
             ])->execute();
 
             return true;

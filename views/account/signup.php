@@ -49,6 +49,7 @@ $form = \yii\bootstrap\ActiveForm::begin();
     echo $form->field($model, 'phone')->textInput(['placeholder' => '+7987XXXXXXX', 'style' => 'width: 50%', 'class' => 'input-group input-group-lg society-form-input'])->label('Номер телефона');
     echo $form->field($model, 'email')->textInput(['style' => 'width: 50%', 'class' => 'input-group input-group-lg society-form-input'])->label('Email *');
     echo $form->field($model, 'password')->passwordInput(['style' => 'width: 50%', 'class' => 'input-group input-group-lg society-form-input'])->label('Пароль *');
+    echo $form->field($model, 'retry_password')->passwordInput(['style' => 'width: 50%', 'class' => 'input-group input-group-lg society-form-input'])->label('Повторите пароль *');
 
     echo Html::submitButton('Регистрация', ['class' => 'btn btn-success']);
 

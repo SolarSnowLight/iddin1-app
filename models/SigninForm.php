@@ -16,6 +16,7 @@ class SigninForm extends Model {
     public function rules(){
         return [
             [['username', 'password'], 'required', 'message' => 'Заполните поле'],
+            ['username', 'trim'],
             ['password', 'validatePassword'],
             ['check', 'app\components\BotValidator']
         ];
