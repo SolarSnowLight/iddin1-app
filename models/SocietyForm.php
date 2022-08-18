@@ -161,15 +161,27 @@ class SocietyForm extends Model
                     'created_at' => $current_date
                 ])->execute();
 
+            	/* Добавление информации о пользователе */
+            	Yii::$app->db->createCommand()->insert('iddi_user_info', [
+                	'user_id' => $user->getId(),
+                	'fullname' => $this->surname . ' ' . $this->name . ' ' . $this->patronymic,
+                	'organization' => $this->organization,
+                	'email' => $this->email,
+                	'phone' => $this->phone,
+                	'username' => $login,
+                	'created_at' => $current_date,
+                	'updated_at' => $current_date
+            	])->execute();
+
                 $this->content = '<p>Был создан личный кабинет на сайте iddin1.ru</p>';
                 $this->content = $this->content . '<p>Login: ' . $login . '</p>';
                 $this->content = $this->content . '<p>Password: ' . $this->password . '</p>';
             }
 
             /* Вычисление номера обращения */
-            $count = Yii::$app->db->createCommand('SELECT COUNT(*) FROM iddi_soc_msg')
+            $count = Yii::$app->db->createCommand("SELECT AUTO_INCREMENT FROM information_schema.tables WHERE TABLE_NAME = 'iddi_soc_msg';")
                 ->queryScalar();
-            $this->id = $count + 1;
+            $this->id = $count;
 
             /* Отправка обращения */
             /*$sendM = Yii::$app->mailer->compose('society_mail', ['model' => $this])
@@ -185,7 +197,7 @@ class SocietyForm extends Model
             $parce = explode('@', $this->email);
             $text_to_email = $text_to_email . '<p>' . $parce[0] . '@' . $parce[1] . '</p>';
             $text_to_email = $text_to_email . '<p>Дата обращения: ' . $current_date . '</p>';
-
+              
             $sendM = Yii::$app->mailer->compose()
                 ->setFrom(Yii::$app->params['smtp_email'])
                 ->setTo($this->email)
@@ -194,7 +206,7 @@ class SocietyForm extends Model
 
             $sendA = Yii::$app->mailer->compose()
                 ->setFrom(Yii::$app->params['smtp_email'])
-                ->setTo(Yii::$app->params['feedbackEmail'])
+                ->setTo(Yii::$app->params['smtp_email'])
                 ->setSubject('Уведомление ' . Yii::$app->params['name_app'])
                 ->setHtmlBody($text_to_email);
 

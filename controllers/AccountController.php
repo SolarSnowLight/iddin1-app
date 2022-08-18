@@ -18,6 +18,7 @@ use app\models\SocietyItem;
 use app\models\AnswerForm;
 use app\models\ResetPasswordForm;
 use app\models\PasswordResetRequestForm;
+use app\models\SocietyForm;
 
 
 /* Контроллер аккаунта пользователя */
